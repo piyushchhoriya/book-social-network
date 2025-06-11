@@ -17,6 +17,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static jakarta.persistence.FetchType.EAGER;
+
 @Getter
 @Setter
 @Builder
@@ -30,21 +32,25 @@ public class User implements UserDetails, Principal {
     @Id
     @GeneratedValue
     private Integer id;
-    private String firstName;
-    private String lastName;
+    private String firstname;
+    private String lastname;
     private LocalDate dateOfBirth;
     @Column(unique = true)
     private String email;
     private String password;
     private boolean accountLocked;
     private boolean enabled;
-
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = EAGER)
     private List<Role> roles;
+//    @OneToMany(mappedBy = "owner")
+//    private List<Book> books;
+//    @OneToMany(mappedBy = "user")
+//    private List<BookTransactionHistory> histories;
 
     @CreatedDate
-    @Column(updatable = false,nullable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;
+
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
@@ -93,7 +99,7 @@ public class User implements UserDetails, Principal {
         return enabled;
     }
 
-    private String fullName(){
-        return firstName + " " + lastName;
+    public String getFullName(){
+        return firstname + " " + lastname;
     }
 }
