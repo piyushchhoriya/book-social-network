@@ -16,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -56,14 +55,23 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // we get a request we wrap credentials in UsernamePasswordAuthenticationToken. It is a inbuilt class. We use it to
+        //   pass credentials to AuthenticationManager.
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
+//        If login is successful we get back an Authentication object (auth) that contains:
+//        auth.getPrincipal() ->  Returns your User object (the authenticated user) -> User user = (User) auth.getPrincipal();
+//        auth.getAuthorities() -> Returns the user’s roles/permissions
+//        auth.isAuthenticated() -> returns true
 
-        var claims = new HashMap<String, Object>();
+//        If login fails (wrong email or password): No Authentication object is returned Instead, it throws an exception
+
+        //claims is the extra information we want to add in jwt
+        var claims = new HashMap<String, Object>();  // Value = Object → any type of value (String, int, list, etc.)
         var user = ((User) auth.getPrincipal());
         claims.put("fullName", user.getFullName());
 
@@ -73,11 +81,13 @@ public class AuthenticationService {
                 .build();
     }
 
-    @Transactional
+//    @Transactional
     public void activateAccount(String token) throws MessagingException {
+        //Finds the token in DB else throws error
         Token savedToken = tokenRepository.findByToken(token)
                 // todo exception has to be defined
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
+        //checks token expiry
         if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
             sendValidationEmail(savedToken.getUser());
             throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
@@ -124,6 +134,8 @@ public class AuthenticationService {
         StringBuilder codeBuilder = new StringBuilder();
 
         SecureRandom secureRandom = new SecureRandom();
+//        SecureRandom generates unpredictable, secure random numbers, which are safe to use in things like activation codes, passwords, tokens, and encryption.
+//                It’s better than Random because it’s not guessable and uses system-level entropy for added security.
 
         for (int i = 0; i < length; i++) {
             int randomIndex = secureRandom.nextInt(characters.length());

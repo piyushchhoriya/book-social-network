@@ -31,7 +31,7 @@ public class BeansConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {   //PasswordEncoder is an interface
         return new BCryptPasswordEncoder();
     }
 }
