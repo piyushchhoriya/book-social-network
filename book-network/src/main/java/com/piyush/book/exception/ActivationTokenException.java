@@ -1,4 +1,7 @@
 package com.piyush.book.exception;
 
-public class ActivationTokenException {
+public class ActivationTokenException extends RuntimeException{
+    public ActivationTokenException(String message) {
+        super(message);
+    }
 }
